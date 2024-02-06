@@ -1,0 +1,58 @@
+body {
+    background-color: #1d1d1d;
+    color: #87e029;
+    font-family: 'VT323', monospace;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#board {
+    background-color: #3b363a;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: repeat(20, 20px);
+    grid-template-rows: repeat(20,20px);
+    margin: 5px;
+}
+
+#texto-instrucao {
+    position: absolute;
+    top: 50%;
+    width: 400px;
+    text-align: center;
+    text-transform: capitalize;
+    padding: 0;
+    margin: 0;
+}
+
+.cobra {
+    background-color: #65c202;
+}
+
+.comida {
+    background-color: #e81e1e;
+}
+
+.scores {
+    display: flex;
+    justify-content: space-between;
+}
+
+#score {
+    color: #74e107;
+}
+
+#highscore {
+    color: #aae107;
+    display: none;
+}
+
+footer {
+    text-align: center;
+    bottom: 0;
+    width: 100%;
+}
