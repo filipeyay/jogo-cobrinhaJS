@@ -1,185 +1,96 @@
-const board = document.getElementById("board");
-const textoinstrucao = document.getElementById("texto-instrucao");
-const gridSize = 20;
-const score = document.getElementById('score');
-const highScoreTexto = document.getElementById('highscore');
+// TODO: Restart System and Highscore System
 
-let cobra = [{ x: 10, y: 10 }]; // posição inicial da cobra
-let comida = gerarComida(); // posição aleatoria da comida
-let highscore = 0;
-let direction = 'direita'; // direção
-let jogoInterval;
-let jogoDelayVelocidade = 200;
-let jogoIniciado = false;
+let blockSize = 30;
+let totalRow = 18;
+let totalCol = 18;
+let board;
+let context;
+let snakeX = blockSize * 5;
+let snakeY = blockSize * 5;
+let speedX = 0;
+let speedY = 0;
+let foodX;
+let foodY;
+let snakeBody = [];
 
-// desenha --> mapa, cobra, comida
-function draw() {
-    board.innerHTML = '';
-    drawCobra();
-    drawComida();
-    updateScore();
-}
+let gameOver = false;
 
-// cobra
-function drawCobra() {
-    if (jogoIniciado){cobra.forEach((segmento) => {
-        const cobraElemento = createJogoElemento('div', 'cobra');
-        setPos(cobraElemento, segmento)
-        board.appendChild(cobraElemento);
-    });}
-}
+window.onload = function () {
+  board = document.getElementById("board");
+  board.height = totalRow * blockSize;
+  board.width = totalCol * blockSize;
+  context = board.getContext("2d");
 
-// comida
-function drawComida() {
-    if (jogoIniciado) {
-        const comidaElemento = createJogoElemento('div', 'comida');
-        setPos(comidaElemento, comida);
-        board.appendChild(comidaElemento);
+  placeFood();
+  document.addEventListener("keyup", changeDirection);
+  setInterval(update, 1200 / 10); // snake speed
+};
+
+function update() {
+  if (gameOver) {
+    return;
+  }
+  context.fillStyle = "#23201a";
+  context.fillRect(0, 0, board.width, board.height);
+
+  context.fillStyle = "#792639";
+  context.fillRect(foodX, foodY, blockSize, blockSize);
+
+  if (snakeX == foodX && snakeY == foodY) {
+    snakeBody.push([foodX, foodY]);
+    placeFood();
+  }
+
+  // snake body grow
+  for (let i = snakeBody.length - 1; i > 0; i--) {
+    snakeBody[i] = snakeBody[i - 1];
+  }
+  if (snakeBody.length) {
+    snakeBody[0] = [snakeX, snakeY];
+  }
+
+  context.fillStyle = "#868645";
+  snakeX += speedX * blockSize;
+  snakeY += speedY * blockSize;
+  context.fillRect(snakeX, snakeY, blockSize, blockSize);
+
+  for (let i = 0; i < snakeBody.length; i++) {
+    context.fillRect(snakeBody[i][0], snakeBody[i][1], blockSize, blockSize);
+  }
+  if (
+    snakeX < 0 ||
+    snakeX > totalCol * blockSize ||
+    snakeY < 0 ||
+    snakeY > totalRow * blockSize
+  ) {
+    gameOver = true;
+    alert("Game Over");
+  }
+  for (let i = 0; i < snakeBody.length; i++) {
+    if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
+      gameOver = true;
+      alert("Game Over");
     }
+  }
 }
 
-// cria div cobra/comida
-function createJogoElemento(tag, className) {
-    const elemento = document.createElement(tag);
-    elemento.className = className;
-    return elemento;
+function changeDirection(e) {
+  if (e.code == "ArrowUp" && speedY != 1) {
+    speedX = 0;
+    speedY = -1;
+  } else if (e.code == "ArrowDown" && speedY != -1) {
+    speedX = 0;
+    speedY = 1;
+  } else if (e.code == "ArrowLeft" && speedX != 1) {
+    speedX = -1;
+    speedY = 0;
+  } else if (e.code == "ArrowRight" && speedX != -1) {
+    speedX = 1;
+    speedY = 0;
+  }
 }
 
-// posição da cobra/comida
-function setPos(elemento, posicao) {
-    elemento.style.gridColumn = posicao.x;
-    elemento.style.gridRow = posicao.y;
-}
-
-// gerar posição inicial da comida de forma alearotira
-function gerarComida() {
-    const x = Math.floor(Math.random() * gridSize + 1);
-    const y = Math.floor(Math.random() * gridSize + 1);
-    return { x, y };
-}
-
-// mover a cobra
-function mover() {
-    const head = { ...cobra[0] };
-    switch(direction) {
-        case 'direita':
-            head.x++;
-            break;
-        case 'cima':
-            head.y--;
-            break;
-        case 'baixo':
-            head.y++;
-            break;
-        case 'esquerda':
-            head.x--;
-            break;
-    }
-
-    cobra.unshift(head);
-
-    if (head.x === comida.x && head.y === comida.y) {
-        comida = gerarComida();
-        clearInterval(jogoInterval); // limpa ultimo interval
-        jogoInterval = setInterval(() => {
-            mover();
-            checkColisao();
-            draw();
-        }, jogoDelayVelocidade);
-    } else {
-        cobra.pop();
-    }
-}
-
-// função iniciar jogo
-function iniciarJogo() {
-    jogoIniciado = true;
-    textoinstrucao.style.display = 'none';
-    jogoInterval = setInterval(() => {
-        mover();
-        checkColisao();
-        draw();
-    }, jogoDelayVelocidade);
-}
-
-// teclas
-function handleKeyPress(event) {
-    if(!jogoIniciado && event.code === 'Space' || (jogoIniciado && event.key === ' ') // inicia jogo com a tecla espaço
-    ) {
-        iniciarJogo();
-    } else {
-        switch (event.key) {
-            case 'ArrowUp':
-                direction = 'cima';
-                break;
-            case 'ArrowDown':
-                    direction = 'baixo';
-                    break;
-            case 'ArrowLeft':
-                direction = 'esquerda';
-                break;
-            case 'ArrowRight':
-                direction = 'direita';
-                break;
-        }
-    }
-}
-
-document.addEventListener('keydown', handleKeyPress);
-
-function aumentarVelocidade() {
-    console.log(jogoDelayVelocidade);
-    if (jogoDelayVelocidade > 150) {
-        jogoDelayVelocidade -= 5;
-    } else if (jogoDelayVelocidade > 100) {
-        jogoDelayVelocidade -= 3;
-    } else if (jogoDelayVelocidade > 50) {
-        jogoDelayVelocidade -= 2;
-    } else if (jogoDelayVelocidade > 25) {
-        jogoDelayVelocidade -= 1;
-    }
-}
-
-function checkColisao() {
-    const head = cobra[0];
-    if (head.x < 1 || head.x > gridSize || head.y < 1 || head.y > gridSize) {
-        resetJogo();
-    }
-
-    for (let i = 1; i < cobra.length; i++) {
-        if (head.x === cobra[i].x && head.y === cobra[i].y) {
-            resetJogo();
-        }
-    }
-}
-
-function resetJogo() {
-    updateHighScore();
-    stopJogo();
-    cobra = [{ x: 10, y: 10 }];
-    comida = gerarComida();
-    direction = 'direita';
-    jogoDelayVelocidade = 200;
-    updateScore();
-}
-
-// pontuação
-function updateScore() {
-    const scoreAtual = cobra.length - 1;
-    score.textContent = scoreAtual.toString().padStart(3, '0');
-}
-
-function stopJogo() {
-    clearInterval(jogoInterval);
-    jogoIniciado = false;
-    textoinstrucao.style.display = 'block';
-}
-
-function updateHighScore() {
-    const scoreAtual = cobra.length - 1;
-    if (scoreAtual > highscore) {
-        highscore = scoreAtual;
-        highScoreTexto.textContent = highscore.toString().padStart(3, '0');
-    }
-    highScoreTexto.style.display = 'block';
+function placeFood() {
+  foodX = Math.floor(Math.random() * totalCol) * blockSize;
+  foodY = Math.floor(Math.random() * totalRow) * blockSize;
 }
