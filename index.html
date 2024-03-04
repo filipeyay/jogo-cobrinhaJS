@@ -7,11 +7,17 @@
     <link href="style.css" rel="stylesheet" />
   </head>
   <body>
-    <h2>Use the Arrow Keys to Start Playing</h2>
-    <canvas id="board"></canvas>
+    <!-- TODO: add instruction text on the left of the board -->
+    <h2>Wellcome!</h2>
+    <br />
+    <div class="score">
+      <span id="highscore">0</span>
+      <span id="currentscore">0</span>
+    </div>
+    <canvas id="board"></canvas><br /><br />
 
-    <!-- TODO: Restart Button -->
-    <footer>Made by Filipe Andrade🦉</footer>
+    <button id="restart">Restart</button>
+    <footer>Made by Filipe Andrade👾</footer>
 
     <script src="script.js"></script>
   </body>
